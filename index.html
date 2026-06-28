@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>의학용어 학습 · 2026 ICN 임상 실습 용어</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFBF9;
+    --surface:#FFFFFF;
+    --ink:#1A1C20;
+    --muted:#71757E;
+    --faint:#9A9DA4;
+    --line:#EAEAE4;
+    --accent:#137A6B;
+    --accent-deep:#0F6053;
+    --accent-soft:#E7F2EF;
+    --correct:#2E7D58;
+    --correct-soft:#E8F3EC;
+    --wrong:#C5483F;
+    --wrong-soft:#FBEBE9;
+    --r:14px;
+    --sans:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:24px 18px 56px;
+    min-height:100vh;
+  }
+  .wrap{width:100%;max-width:640px;}
+
+  /* ── top bar ── */
+  .topbar{display:flex;align-items:center;justify-content:space-between;height:38px;margin-bottom:10px;}
+  .brand{font-size:0.82rem;font-weight:600;letter-spacing:-0.01em;color:var(--ink);display:flex;align-items:center;gap:7px;}
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
+  .back-btn{border:none;background:none;color:var(--muted);font-family:var(--sans);font-size:0.84rem;cursor:pointer;padding:6px 4px;display:none;align-items:center;gap:4px;border-radius:8px;}
+  .back-btn:hover{color:var(--ink);}
+  .back-btn.show{display:inline-flex;}
+
+  /* ── home ── */
+  .home{padding-top:40px;text-align:center;animation:rise .5s ease both;}
+  .home .eyebrow{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:500;}
+  .home h1{font-size:clamp(1.9rem,7vw,2.6rem);font-weight:700;letter-spacing:-0.03em;margin:14px 0 8px;}
+  .home .sub{color:var(--muted);font-size:0.92rem;}
+  .home .sub b{color:var(--ink);font-weight:600;font-family:var(--mono);}
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:38px;text-align:left;}
+  .mode-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px 20px;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;position:relative;overflow:hidden;}
+  .mode-card:hover{transform:translateY(-3px);border-color:#dadbd2;box-shadow:0 10px 28px -16px rgba(20,30,28,.35);}
+  .mode-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .mode-card .ico{width:34px;height:34px;color:var(--accent);margin-bottom:16px;}
+  .mode-card h3{font-size:1.05rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:5px;}
+  .mode-card p{font-size:0.82rem;color:var(--muted);line-height:1.45;}
+  .mode-card .arrow{position:absolute;top:22px;right:20px;color:var(--faint);transition:transform .18s ease,color .18s ease;}
+  .mode-card:hover .arrow{transform:translateX(3px);color:var(--accent);}
+  .note-entry{display:flex;align-items:center;gap:16px;width:100%;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;cursor:pointer;text-align:left;font-family:var(--sans);color:var(--ink);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;}
+  .note-entry:hover{transform:translateY(-3px);border-color:#dadbd2;box-shadow:0 10px 28px -16px rgba(20,30,28,.35);}
+  .note-entry:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .note-entry .ico{width:30px;height:30px;color:var(--accent);flex-shrink:0;}
+  .note-entry .ne-txt{flex:1;}
+  .note-entry h3{font-size:1.02rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:3px;}
+  .note-entry p{font-size:0.8rem;color:var(--muted);}
+  .note-badge{font-family:var(--mono);font-weight:700;font-size:0.92rem;min-width:34px;height:34px;padding:0 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent-deep);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .note-badge.zero{background:#f2f2ee;color:var(--faint);}
+  .home-foot{margin-top:32px;font-size:0.74rem;color:var(--faint);line-height:1.6;}
+
+  /* ── 오답 노트 screen ── */
+  .note-screen{animation:rise .4s ease both;}
+  .note-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px;}
+  .note-top h2{font-size:1.3rem;font-weight:700;letter-spacing:-0.02em;}
+  .note-top .cnt{font-family:var(--mono);font-size:0.86rem;color:var(--muted);}
+  .note-lead{color:var(--muted);font-size:0.84rem;margin-bottom:20px;}
+  .note-empty{text-align:center;padding:48px 20px;color:var(--muted);}
+  .note-empty .ico{width:42px;height:42px;color:var(--line);margin-bottom:14px;}
+  .note-empty .t{font-weight:700;color:var(--ink);font-size:1rem;margin-bottom:6px;letter-spacing:-0.02em;}
+  .note-empty .d{font-size:0.85rem;line-height:1.6;max-width:340px;margin:0 auto;}
+  .note-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;}
+  .note-row{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px;display:flex;align-items:center;gap:14px;}
+  .note-row .nq{font-family:var(--mono);font-weight:700;color:var(--accent-deep);font-size:0.95rem;flex-shrink:0;min-width:60px;}
+  .note-row .nm{flex:1;font-size:0.88rem;line-height:1.4;}
+  .note-row .nm small{display:block;color:var(--faint);font-family:var(--mono);font-size:0.72rem;margin-top:2px;}
+  .note-row .ncat{font-family:var(--mono);font-size:0.64rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:99px;flex-shrink:0;}
+  .note-row .ndel{border:none;background:none;color:var(--faint);cursor:pointer;padding:6px;border-radius:8px;flex-shrink:0;display:flex;}
+  .note-row .ndel:hover{color:var(--wrong);background:var(--wrong-soft);}
+  .note-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .note-actions .wide{grid-column:1 / -1;}
+  .note-foot{margin-top:18px;font-size:0.72rem;color:var(--faint);text-align:center;line-height:1.6;}
+
+  /* ── flashcard note toggle ── */
+  .fc-note-btn.on{color:var(--accent-deep);font-weight:700;}
+
+  /* ── shared section card ── */
+  .panel{animation:rise .4s ease both;}
+  @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+  /* ── progress strip ── */
+  .meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:14px;}
+  .counter{font-family:var(--mono);font-size:0.84rem;color:var(--muted);font-weight:500;}
+  .counter b{color:var(--ink);}
+  .track{flex:1;height:5px;background:var(--line);border-radius:99px;overflow:hidden;}
+  .track .fill{height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease;}
+  .score-pill{font-family:var(--mono);font-size:0.8rem;color:var(--muted);white-space:nowrap;}
+  .score-pill .ok{color:var(--correct);font-weight:700;}
+  .score-pill .no{color:var(--wrong);font-weight:700;}
+
+  /* ── flashcard ── */
+  .fc-stage{perspective:1400px;margin-bottom:18px;}
+  .fc{position:relative;width:100%;min-height:300px;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.1,.2,1);cursor:pointer;}
+  .fc.flip{transform:rotateY(180deg);}
+  .fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:34px 28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:opacity 0s linear .27s;}
+  .fc-face::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);border-radius:18px 18px 0 0;}
+  .fc-front{opacity:1;}
+  .fc-back{transform:rotateY(180deg);opacity:0;}
+  .fc.flip .fc-front{opacity:0;}
+  .fc.flip .fc-back{opacity:1;}
+  .cat-tag{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:4px 11px;border-radius:99px;font-weight:500;margin-bottom:20px;}
+  .fc-term{font-family:var(--mono);font-weight:700;font-size:clamp(2rem,9vw,3.4rem);color:var(--accent-deep);letter-spacing:-0.02em;line-height:1.05;word-break:break-word;}
+  .fc-hint{position:absolute;bottom:20px;left:0;right:0;font-size:0.74rem;color:var(--faint);}
+  .fc-mean{font-size:clamp(1.15rem,4.5vw,1.55rem);font-weight:700;letter-spacing:-0.02em;line-height:1.4;color:var(--ink);}
+  .fc-full{margin-top:14px;font-family:var(--mono);font-size:0.85rem;color:var(--muted);line-height:1.5;max-width:90%;}
+  .fc-q-small{margin-top:18px;font-family:var(--mono);font-size:0.78rem;color:var(--faint);}
+
+  .nav-row{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px;}
+
+  /* ── buttons ── */
+  .btn{font-family:var(--sans);font-size:0.9rem;font-weight:600;border-radius:11px;padding:13px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);transition:all .15s ease;text-align:center;}
+  .btn:hover{border-color:#d4d5cc;background:#fafaf7;}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn.primary:hover{background:var(--accent-deep);border-color:var(--accent-deep);}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .btn-ghost{border:none;background:none;color:var(--muted);}
+  .btn-ghost:hover{background:#f2f2ee;color:var(--ink);}
+
+  .util-row{display:flex;justify-content:center;margin-top:14px;}
+
+  /* ── quiz setup ── */
+  .setup{animation:rise .4s ease both;}
+  .setup h2{font-size:1.3rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px;}
+  .setup .lead{color:var(--muted);font-size:0.88rem;margin-bottom:26px;}
+  .field-label{font-size:0.8rem;font-weight:600;color:var(--muted);margin:22px 0 10px;display:flex;align-items:center;gap:7px;}
+  .field-label .n{font-family:var(--mono);color:var(--accent);font-size:0.75rem;}
+  .chip-row{display:flex;gap:9px;flex-wrap:wrap;}
+  .chip{flex:1;min-width:92px;border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:14px 12px;cursor:pointer;text-align:center;transition:all .15s ease;}
+  .chip:hover{border-color:#d4d5cc;}
+  .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .chip.on{border-color:var(--accent);background:var(--accent-soft);}
+  .chip .ct{font-weight:700;font-size:0.92rem;letter-spacing:-0.01em;}
+  .chip .cd{font-size:0.74rem;color:var(--muted);margin-top:3px;font-family:var(--mono);}
+  .chip.on .ct{color:var(--accent-deep);}
+  .setup .start{margin-top:34px;width:100%;padding:15px;font-size:0.96rem;}
+
+  /* ── quiz ── */
+  .q-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:30px 26px;margin-bottom:14px;position:relative;}
+  .q-eyebrow{font-size:0.74rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--faint);margin-bottom:14px;}
+  .q-term{font-family:var(--mono);font-weight:700;font-size:clamp(1.7rem,7vw,2.7rem);color:var(--accent-deep);letter-spacing:-0.02em;line-height:1.1;word-break:break-word;}
+  .q-mean{font-size:clamp(1.15rem,4.6vw,1.5rem);font-weight:700;line-height:1.4;letter-spacing:-0.02em;}
+  .opts{display:grid;gap:10px;}
+  .opt{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:15px 16px;cursor:pointer;text-align:left;font-family:var(--sans);font-size:0.92rem;color:var(--ink);transition:all .14s ease;display:flex;align-items:center;gap:12px;line-height:1.4;}
+  .opt .key{font-family:var(--mono);font-size:0.74rem;color:var(--faint);border:1px solid var(--line);border-radius:6px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.mono-opt{font-family:var(--mono);font-weight:600;}
+  .opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft);}
+  .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .opt:disabled{cursor:default;}
+  .opt.correct{border-color:var(--correct);background:var(--correct-soft);color:var(--correct);font-weight:600;}
+  .opt.correct .key{border-color:var(--correct);color:var(--correct);}
+  .opt.wrong{border-color:var(--wrong);background:var(--wrong-soft);color:var(--wrong);font-weight:600;}
+  .opt.wrong .key{border-color:var(--wrong);color:var(--wrong);}
+  .reveal{margin-top:16px;font-size:0.86rem;color:var(--muted);font-family:var(--mono);line-height:1.5;padding:12px 14px;background:#f7f7f3;border-radius:10px;display:none;}
+  .reveal.show{display:block;animation:rise .25s ease both;}
+  .reveal b{color:var(--ink);}
+  .next-row{margin-top:8px;}
+  .next-row .btn{width:100%;padding:14px;}
+
+  /* ── result ── */
+  .result{text-align:center;animation:rise .45s ease both;padding-top:12px;}
+  .result .ring{width:140px;height:140px;margin:8px auto 6px;position:relative;}
+  .result .pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .result .pct .big{font-family:var(--mono);font-size:2.2rem;font-weight:700;color:var(--accent-deep);letter-spacing:-0.02em;}
+  .result .pct .lbl{font-size:0.72rem;color:var(--muted);font-family:var(--mono);letter-spacing:0.08em;}
+  .result .msg{font-size:1.05rem;font-weight:700;letter-spacing:-0.02em;margin:6px 0 4px;}
+  .result .tally{font-family:var(--mono);font-size:0.86rem;color:var(--muted);}
+  .result .tally .ok{color:var(--correct);}
+  .result .tally .no{color:var(--wrong);}
+  .wrong-block{margin:26px 0 18px;text-align:left;}
+  .wrong-head{font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:11px;}
+  .wrong-item{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--wrong);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;gap:14px;align-items:baseline;}
+  .wrong-item .wq{font-family:var(--mono);font-weight:700;color:var(--accent-deep);flex-shrink:0;font-size:0.92rem;}
+  .wrong-item .wm{text-align:right;font-size:0.86rem;color:var(--ink);}
+  .wrong-item .wm small{display:block;color:var(--faint);font-family:var(--mono);font-size:0.72rem;margin-top:2px;}
+  .result-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
+
+  @media(max-width:430px){
+    .modes{grid-template-columns:1fr;}
+    body{padding:18px 14px 48px;}
+    .fc-face,.q-card{padding:26px 20px;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+    .fc{transition:none!important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>의학용어 학습</div>
+    <button class="back-btn" id="backBtn" aria-label="홈으로">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>홈
+    </button>
+  </div>
+  <div id="app"></div>
+</div>
+
+<script>
+/* ====================== 용어 데이터 (2026 ICN 임상 실습 용어) ====================== */
+const TERMS = [
+  // ── 투약 ──
+  {q:"#1", f:"divide one", m:"총량을 하루 한 번 투약", c:"투약"},
+  {q:"#2", f:"divide two", m:"총량을 하루 두 번 나누어 투약", c:"투약"},
+  {q:"#3", f:"divide three", m:"총량을 하루 세 번 나누어 투약", c:"투약"},
+  {q:"#4", f:"divide four", m:"총량을 하루 네 번 나누어 투약", c:"투약"},
+  {q:"#6", f:"divide six", m:"총량을 하루 여섯 번 나누어 투약", c:"투약"},
+  {q:"q", f:"every", m:"일회용량을 일정 시간마다", c:"투약"},
+  {q:"qd", f:"quaque die (q24hr)", m:"하루 한 번 (24시간마다)", c:"투약"},
+  {q:"bid", f:"bis in die (q12hr)", m:"하루 두 번 (12시간마다)", c:"투약"},
+  {q:"tid", f:"ter in die (q8hr)", m:"하루 세 번 (8시간마다)", c:"투약"},
+  {q:"qid", f:"quarter in die (q6hr)", m:"하루 네 번 (6시간마다)", c:"투약"},
+  {q:"EOD", f:"every other day", m:"격일 (2일마다 1회)", c:"투약"},
+  {q:"hs", f:"hora somni", m:"취침 시", c:"투약"},
+  {q:"a.c.", f:"ante cibum (before meals)", m:"식전", c:"투약"},
+  {q:"p.c.", f:"post cibum (after meals)", m:"식후", c:"투약"},
+  {q:"PRN", f:"pro re nata (as needed)", m:"필요 시", c:"투약"},
+  {q:"stat", f:"statim (at once)", m:"즉시", c:"투약"},
+  {q:"C-line", f:"central line", m:"중심정맥라인", c:"투약"},
+  {q:"PICC", f:"peripherally inserted central catheter", m:"말초 삽입형 중심정맥관", c:"투약"},
+  {q:"PPD test", f:"purified protein derivative test (Mantoux)", m:"결핵 피부반응검사(skin test)", c:"투약"},
+  {q:"S", f:"sine (without)", m:"~ 없이", c:"투약"},
+  {q:"c", f:"con (with)", m:"~ 와 함께", c:"투약"},
+
+  // ── 간호 ──
+  {q:"on call", f:"on call", m:"전화 올 때(호출 시)", c:"간호"},
+  {q:"ABR / BR", f:"absolute bed rest / bed rest", m:"절대침상안정 / 침상안정", c:"간호"},
+  {q:"NRS", f:"numeric (pain) rating scale", m:"숫자(통증)평가척도", c:"간호"},
+  {q:"FAS", f:"facial analogue scale", m:"얼굴통증 척도", c:"간호"},
+  {q:"VAS", f:"visual analogue scale", m:"시각통증 척도", c:"간호"},
+  {q:"GCS", f:"Glasgow coma scale", m:"글래스고 혼수척도", c:"간호"},
+  {q:"EDBC", f:"encourage deep breathing and coughing", m:"심호흡과 기침 격려", c:"간호"},
+  {q:"abd.", f:"abdomen", m:"복부", c:"간호"},
+  {q:"AC", f:"abdominal circumference", m:"복부 둘레", c:"간호"},
+  {q:"BMI", f:"body mass index", m:"체질량 지수", c:"간호"},
+  {q:"BP", f:"blood pressure", m:"혈압", c:"간호"},
+  {q:"ABP", f:"arterial blood pressure", m:"동맥 혈압 (침습적)", c:"간호"},
+  {q:"NIBP", f:"non-invasive blood pressure", m:"비침습적 혈압", c:"간호"},
+  {q:"MBP", f:"manual blood pressure", m:"직접 혈압 측정 (청진기)", c:"간호"},
+  {q:"BSA", f:"body surface area", m:"체표면적", c:"간호"},
+  {q:"BST", f:"blood sugar test", m:"혈당검사", c:"간호"},
+  {q:"CPCR / CPR", f:"cardiopulmonary cerebral resuscitation", m:"심폐(뇌)소생술", c:"간호"},
+  {q:"D/C shock", f:"direct current shock", m:"전기충격 (제세동/심율동전환)", c:"간호"},
+  {q:"DNR", f:"do not resuscitate", m:"소생술포기", c:"간호"},
+  {q:"DOA", f:"dead on arrival", m:"병원 도착 사망", c:"간호"},
+  {q:"Cx", f:"complication", m:"합병증", c:"간호"},
+  {q:"imp.", f:"impression", m:"추정 진단(인상)", c:"간호"},
+  {q:"EMR / ENR", f:"electronic medical/nursing record", m:"전자의무기록 / 전자간호기록", c:"간호"},
+  {q:"d/t", f:"due to", m:"~ 때문에", c:"간호"},
+  {q:"F/U", f:"follow up", m:"추적 관찰", c:"간호"},
+  {q:"FUO", f:"fever of unknown origin", m:"원인불명열", c:"간호"},
+  {q:"D/C", f:"discontinue / discharge", m:"① 중지 ② 퇴원 (혼동주의)", c:"간호"},
+  {q:"POD", f:"postoperative day", m:"수술 후 일수", c:"간호"},
+  {q:"HD", f:"hospital day / hemodialysis", m:"① 입원 일수 ② 혈액투석 (혼동주의)", c:"간호"},
+  {q:"I/O", f:"intake / output", m:"섭취 및 배설량", c:"간호"},
+  {q:"KVO", f:"keep vein open", m:"정맥이 막히지 않게 유지", c:"간호"},
+  {q:"NPO", f:"nothing per oral", m:"금식", c:"간호"},
+  {q:"RD / SD / LD", f:"regular / soft / liquid diet", m:"밥 / 죽 / 미음", c:"간호"},
+  {q:"nelaton", f:"nelaton catheter", m:"넬라통 도관", c:"간호"},
+  {q:"enema", f:"enema", m:"관장", c:"간호"},
+  {q:"DTR", f:"deep tendon reflex", m:"심부건반사", c:"간호"},
+  {q:"D&C", f:"dilatation and curettage", m:"자궁긁어냄(자궁소파술)", c:"간호"},
+  {q:"EDC", f:"expected date of confinement", m:"분만예정일", c:"간호"},
+  {q:"FHT", f:"fetal heart tone", m:"태아 심음 청취", c:"간호"},
+  {q:"LMP", f:"last menstrual period", m:"최종 월경일", c:"간호"},
+  {q:"DR", f:"delivery room", m:"분만실", c:"간호"},
+  {q:"NR", f:"nursery room", m:"신생아실", c:"간호"},
+  {q:"DSC", f:"day surgery center", m:"통원수술센터", c:"간호"},
+  {q:"ER", f:"emergency room", m:"응급실", c:"간호"},
+  {q:"ETT", f:"endotracheal tube", m:"기관내관", c:"간호"},
+  {q:"SOB", f:"shortness of breath", m:"호흡곤란(짧고 빠른 호흡)", c:"간호"},
+  {q:"WOB", f:"work of breath", m:"호흡 부담", c:"간호"},
+  {q:"OP", f:"operation", m:"수술", c:"간호"},
+  {q:"I&D", f:"incision and drainage", m:"절개배농(절개배액)", c:"간호"},
+  {q:"O&C", f:"open and closure", m:"개방 및 봉합", c:"간호"},
+  {q:"J-P drain", f:"Jackson-Pratt drain", m:"잭슨-프랫 배액관", c:"간호"},
+  {q:"ENBD", f:"endoscopic nasobiliary drainage", m:"내시경적 코쓸개관배액", c:"간호"},
+  {q:"SB-tube", f:"Sengstaken-Blakemore tube", m:"식도정맥류 압박관", c:"간호"},
+  {q:"IPC / SCD", f:"intermittent pneumatic compression", m:"간헐적 공기압박기구", c:"간호"},
+  {q:"eGFR", f:"estimated glomerular filtration rate", m:"추정사구체여과율", c:"간호"},
+  {q:"CAPD", f:"continuous ambulatory peritoneal dialysis", m:"지속적 복막 투석", c:"간호"},
+  {q:"PD", f:"peritoneal dialysis", m:"복막투석", c:"간호"},
+  {q:"CRRT", f:"continuous renal replacement therapy", m:"지속신대체요법", c:"간호"},
+  {q:"PR", f:"physical restraint / pulse rate", m:"① 신체보호대(억제대) ② 맥박수", c:"간호"},
+  {q:"PT", f:"physical therapy", m:"물리치료", c:"간호"},
+  {q:"ROM", f:"range of motion", m:"운동 범위", c:"간호"},
+  {q:"PROM", f:"premature rupture of membrane", m:"조기양막파열", c:"간호"},
+  {q:"LBP", f:"low back pain", m:"요통", c:"간호"},
+  {q:"MRSA", f:"methicillin-resistant S. aureus", m:"메티실린내성 황색포도알균", c:"간호"},
+  {q:"MSSA", f:"methicillin-sensitive S. aureus", m:"메티실린감수성 황색포도알균", c:"간호"},
+  {q:"VRE", f:"vancomycin-resistant enterococci", m:"반코마이신내성 장알균", c:"간호"},
+  {q:"CRE", f:"carbapenem-resistant Enterobacteriaceae", m:"카바페넴내성 장세균", c:"간호"},
+  {q:"CPE", f:"carbapenemase producing Enterobacteriaceae", m:"카바페넴분해효소생산 장세균", c:"간호"},
+  {q:"ESBL", f:"extended-spectrum beta-lactamase", m:"광범위베타락탐분해효소", c:"간호"},
+  {q:"VDRL", f:"venereal disease research laboratory test", m:"매독혈청검사", c:"간호"},
+
+  // ── 진료 ──
+  {q:"C.C", f:"chief complaint", m:"주호소", c:"진료"},
+  {q:"Ex.", f:"examine", m:"검진", c:"진료"},
+  {q:"Dx.", f:"diagnosis / dressing", m:"① 진단 ② 상처치료(드레싱)", c:"진료"},
+  {q:"Tx.", f:"treatment", m:"치료", c:"진료"},
+  {q:"P.I.", f:"present illness", m:"현병력", c:"진료"},
+  {q:"Hx.", f:"history", m:"병력", c:"진료"},
+  {q:"HBP", f:"high blood pressure", m:"고혈압", c:"진료"},
+  {q:"HTN", f:"hypertension", m:"고혈압", c:"진료"},
+  {q:"hTN", f:"hypotension", m:"저혈압", c:"진료"},
+  {q:"DM", f:"diabetes mellitus", m:"당뇨병", c:"진료"},
+  {q:"F/Hx.", f:"family history", m:"가족력", c:"진료"},
+  {q:"P/Hx.", f:"past history", m:"과거력", c:"진료"},
+  {q:"S/Hx.", f:"social history", m:"사회력", c:"진료"},
+  {q:"P/E", f:"physical examination", m:"신체검진", c:"진료"},
+  {q:"G/A", f:"general appearance", m:"일반모습", c:"진료"},
+  {q:"CNS", f:"central nervous system", m:"중추신경계", c:"진료"},
+  {q:"HEENT", f:"head, ears, eyes, nose, throat", m:"두부/귀/눈/코/인후", c:"진료"},
+  {q:"MS", f:"mental status", m:"의식상태", c:"진료"},
+  {q:"LOC", f:"level of consciousness", m:"의식수준", c:"진료"},
+  {q:"PLR", f:"pupillary light reflex", m:"동공빛반사(대광반사)", c:"진료"},
+  {q:"F/C", f:"fever / chill", m:"발열 / 오한", c:"진료"},
+  {q:"C/S/R", f:"cough / sputum / rhinorrhea", m:"기침 / 가래 / 콧물", c:"진료"},
+  {q:"PNS", f:"peripheral nervous system", m:"말초신경계", c:"진료"},
+  {q:"RHBsm", f:"regular heart beat without murmur", m:"잡음 없는 규칙적 심장 박동", c:"진료"},
+  {q:"CBSsr", f:"clear breathing sounds without rale", m:"수포음 없는 깨끗한 호흡음", c:"진료"},
+  {q:"G-I", f:"gastro-intestine", m:"위장계", c:"진료"},
+  {q:"N/A/V/D/C", f:"nausea/anorexia/vomiting/diarrhea/constipation", m:"오심/식욕부진/구토/설사/변비", c:"진료"},
+  {q:"NABS", f:"normoactive bowel sounds", m:"장음 정상", c:"진료"},
+  {q:"Td / rTd", f:"tenderness / rebound tenderness", m:"압통 / 반동압통", c:"진료"},
+  {q:"Ext", f:"extremity", m:"사지(팔다리)", c:"진료"},
+  {q:"upper/lower Ext", f:"upper / lower extremity", m:"상지 / 하지", c:"진료"},
+  {q:"Fx.", f:"fracture", m:"골절", c:"진료"},
+  {q:"MMT", f:"manual muscle test", m:"맨손 근력 검사", c:"진료"},
+
+  // ── 질환 ──
+  {q:"ARDS", f:"acute respiratory distress syndrome", m:"급성호흡장애증후군", c:"질환"},
+  {q:"COPD", f:"chronic obstructive pulmonary disease", m:"만성폐쇄폐질환", c:"질환"},
+  {q:"ILD", f:"interstitial lung disease", m:"사이질폐질환(간질성 폐질환)", c:"질환"},
+  {q:"DKA", f:"diabetic ketoacidosis", m:"당뇨병케토산증", c:"질환"},
+  {q:"CVA", f:"cerebrovascular accident", m:"뇌졸중", c:"질환"},
+  {q:"TA", f:"traffic accident", m:"교통사고", c:"질환"},
+  {q:"AMI", f:"acute myocardial infarction", m:"급성심근경색증", c:"질환"},
+  {q:"CAD", f:"coronary artery disease", m:"관상동맥질환", c:"질환"},
+  {q:"LAD", f:"left anterior descending coronary artery", m:"왼쪽앞내림관상동맥", c:"질환"},
+  {q:"LCx", f:"left circumflex artery", m:"왼쪽휘돌이관상동맥", c:"질환"},
+  {q:"RCA", f:"right coronary artery", m:"오른쪽관상동맥", c:"질환"},
+  {q:"NSTEMI", f:"non-ST elevation myocardial infarction", m:"ST 비상승 심근경색증", c:"질환"},
+  {q:"STEMI", f:"ST elevation myocardial infarction", m:"ST 상승 심근경색", c:"질환"},
+  {q:"CHF", f:"congestive heart failure", m:"울혈 심부전", c:"질환"},
+  {q:"RVH", f:"right ventricular hypertrophy", m:"오른쪽심실비대", c:"질환"},
+  {q:"LVH", f:"left ventricular hypertrophy", m:"왼쪽심실비대", c:"질환"},
+  {q:"AVM", f:"arteriovenous malformation", m:"동정맥기형", c:"질환"},
+  {q:"ASD", f:"atrial septal defect", m:"심방중격결손", c:"질환"},
+  {q:"VSD", f:"ventricular septal defect", m:"심실중격결손", c:"질환"},
+  {q:"AR", f:"aortic valve regurgitation", m:"대동맥판역류", c:"질환"},
+  {q:"AVR", f:"aortic valve replacement", m:"대동맥판치환", c:"질환"},
+  {q:"TR", f:"tricuspid regurgitation", m:"삼첨판역류", c:"질환"},
+  {q:"MR", f:"mitral regurgitation / mental retardation", m:"① 승모판역류 ② 정신지체", c:"질환"},
+  {q:"AS", f:"aortic stenosis", m:"대동맥판 협착증", c:"질환"},
+  {q:"TS", f:"tricuspid stenosis / tuberous sclerosis", m:"① 삼첨판 협착증 ② 결절경화증", c:"질환"},
+  {q:"MS", f:"mitral stenosis / multiple sclerosis", m:"① 승모판 협착증 ② 다발경화증", c:"질환"},
+  {q:"EDH", f:"epidural hemorrhage", m:"경막외출혈", c:"질환"},
+  {q:"ICH", f:"intracranial hemorrhage", m:"두개내출혈", c:"질환"},
+  {q:"IVH", f:"intraventricular hemorrhage", m:"뇌실내출혈", c:"질환"},
+  {q:"SAH", f:"subarachnoid hemorrhage", m:"거미막밑출혈(지주막하출혈)", c:"질환"},
+  {q:"SDH", f:"subdural hematoma", m:"경막밑혈종(경막하혈종)", c:"질환"},
+  {q:"T-SAH", f:"traumatic subarachnoid hemorrhage", m:"외상성 지주막하출혈", c:"질환"},
+  {q:"A-comm.A", f:"anterior communicating artery aneurysm", m:"앞교통동맥 동맥류", c:"질환"},
+  {q:"P-comm.A", f:"posterior communicating artery aneurysm", m:"뒤교통동맥 동맥류", c:"질환"},
+  {q:"ACA", f:"anterior cerebral artery", m:"앞대뇌동맥", c:"질환"},
+  {q:"MCA", f:"middle cerebral artery", m:"중간대뇌동맥", c:"질환"},
+  {q:"PCA", f:"posterior cerebral artery", m:"뒤대뇌동맥", c:"질환"},
+  {q:"AVN", f:"avascular necrosis", m:"무혈성괴사", c:"질환"},
+  {q:"DVT", f:"deep vein thrombosis", m:"심부정맥혈전증", c:"질환"},
+  {q:"PTE", f:"pulmonary thromboembolism", m:"폐혈전색전증", c:"질환"},
+  {q:"VTE", f:"venous thromboembolism", m:"정맥혈전증", c:"질환"},
+  {q:"A.A.A.", f:"abdominal aortic aneurysm", m:"복부대동맥류", c:"질환"},
+  {q:"ASO", f:"arteriosclerosis obliterans", m:"폐쇄동맥경화증", c:"질환"},
+  {q:"CBD ca.", f:"common bile duct carcinoma", m:"총담관암종", c:"질환"},
+  {q:"GB ca.", f:"gallbladder carcinoma", m:"담낭암", c:"질환"},
+  {q:"IHD stone", f:"intrahepatic bile duct stone", m:"간내담도결석", c:"질환"},
+  {q:"LC", f:"liver cirrhosis", m:"간경화증", c:"질환"},
+  {q:"HCC", f:"hepatocellular carcinoma", m:"간세포암종", c:"질환"},
+  {q:"APN", f:"acute pyelonephritis", m:"급성신우신염", c:"질환"},
+  {q:"CGN", f:"chronic glomerulonephritis", m:"만성 사구체신염", c:"질환"},
+  {q:"ARF", f:"acute renal failure", m:"급성신부전", c:"질환"},
+  {q:"CRF", f:"chronic renal failure", m:"만성신부전", c:"질환"},
+  {q:"ESRD", f:"end stage renal disease", m:"말기신장병", c:"질환"},
+  {q:"DI", f:"drug intoxication / diabetes insipidus", m:"① 약물중독 ② 요붕증", c:"질환"},
+  {q:"HIV", f:"human immunodeficiency virus", m:"사람면역결핍바이러스", c:"질환"},
+  {q:"AIDS", f:"acquired immunodeficiency syndrome", m:"후천면역결핍증후군", c:"질환"},
+  {q:"SLE", f:"systemic lupus erythematosus", m:"전신홍반루푸스", c:"질환"},
+  {q:"ALL", f:"acute lymphocytic leukemia", m:"급성림프구백혈병", c:"질환"},
+  {q:"CLL", f:"chronic lymphocytic leukemia", m:"만성림프구백혈병", c:"질환"},
+  {q:"AML", f:"acute myelogenous leukemia", m:"급성골수세포백혈병", c:"질환"},
+  {q:"CML", f:"chronic myelogenous leukemia", m:"만성골수세포백혈병", c:"질환"},
+  {q:"DT", f:"delirium tremens / diphtheria, tetanus", m:"① 떨림섬망 ② 디프테리아·파상풍 백신", c:"질환"},
+
+  // ── 검사 ──
+  {q:"WNL", f:"within normal limit", m:"정상 범위 내", c:"검사"},
+  {q:"CBC", f:"complete blood count", m:"전혈구 계산", c:"검사"},
+  {q:"Hb", f:"hemoglobin", m:"혈색소", c:"검사"},
+  {q:"Hct", f:"hematocrit", m:"적혈구 용적률", c:"검사"},
+  {q:"plt", f:"platelet", m:"혈소판", c:"검사"},
+  {q:"ANC", f:"absolute neutrophil count", m:"절대호중구수", c:"검사"},
+  {q:"BC", f:"blood chemistry", m:"혈액화학검사", c:"검사"},
+  {q:"PT", f:"prothrombin time", m:"프로트롬빈시간", c:"검사"},
+  {q:"aPTT", f:"activated partial thromboplastin time", m:"활성화부분트롬보플라스틴시간", c:"검사"},
+  {q:"INR", f:"international normalized ratio", m:"국제표준화비율", c:"검사"},
+  {q:"ACT", f:"active clotting time", m:"활성화응고시간", c:"검사"},
+  {q:"BT", f:"bleeding time", m:"출혈시간", c:"검사"},
+  {q:"LFT", f:"liver function test", m:"간기능 검사", c:"검사"},
+  {q:"UA", f:"urinalysis", m:"요분석", c:"검사"},
+  {q:"urine chemistry", f:"urine chemistry", m:"뇨화학검사", c:"검사"},
+  {q:"urine culture", f:"urine culture", m:"뇨배양검사", c:"검사"},
+  {q:"sputum culture", f:"sputum culture", m:"가래(객담)배양검사", c:"검사"},
+  {q:"blood culture", f:"blood culture", m:"혈액배양", c:"검사"},
+  {q:"rectal swab", f:"rectal swab", m:"직장면봉법", c:"검사"},
+  {q:"nasal swab", f:"nasal swab", m:"코안(비강)면봉법", c:"검사"},
+  {q:"ABGA", f:"arterial blood gas analysis", m:"동맥혈기체분석", c:"검사"},
+  {q:"FBS", f:"fasting blood sugar", m:"공복혈당", c:"검사"},
+  {q:"PP2", f:"postprandial 2hrs glucose test", m:"식후 2시간 혈당검사", c:"검사"},
+  {q:"TDM", f:"therapeutic drug monitoring", m:"치료적 약물농도 검사", c:"검사"},
+  {q:"CSF", f:"cerebrospinal fluid", m:"뇌척수액", c:"검사"},
+  {q:"USG", f:"ultrasonography", m:"초음파", c:"검사"},
+  {q:"CT", f:"computed tomography", m:"컴퓨터단층촬영", c:"검사"},
+  {q:"MRI", f:"magnetic resonance imaging", m:"자기공명영상", c:"검사"},
+  {q:"PET-CT", f:"positron emission tomography", m:"양전자방출단층촬영", c:"검사"},
+  {q:"SPECT", f:"single photon emission CT", m:"단일광자방출단층촬영", c:"검사"},
+  {q:"PACS", f:"picture archiving communicating system", m:"영상저장 및 전송체계", c:"검사"},
+  {q:"Bx.", f:"biopsy", m:"조직검사", c:"검사"},
+  {q:"PCNA", f:"percutaneous needle aspiration", m:"경피적세침흡인술", c:"검사"},
+  {q:"ECG / EKG", f:"electrocardiogram", m:"심전도", c:"검사"},
+  {q:"24hr H-M", f:"24 hours holter monitoring", m:"24시간 휴대용 심전도", c:"검사"},
+  {q:"PFT", f:"pulmonary function test", m:"폐기능 검사", c:"검사"},
+  {q:"BMD", f:"bone mineral density", m:"골밀도", c:"검사"},
+  {q:"TMT", f:"treadmill test", m:"운동부하 검사", c:"검사"},
+  {q:"TEE", f:"transesophageal echocardiogram", m:"식도경유 심초음파", c:"검사"},
+  {q:"EP study", f:"evoked potential study", m:"유발전위 검사", c:"검사"},
+  {q:"RFA", f:"radiofrequency ablation therapy", m:"고주파 치료", c:"검사"},
+  {q:"CABG", f:"coronary artery bypass graft", m:"관상동맥우회술", c:"검사"},
+  {q:"CAG", f:"coronary arteriography", m:"심혈관조영술", c:"검사"},
+  {q:"PCI", f:"percutaneous coronary intervention", m:"경피적 관상동맥중재", c:"검사"},
+  {q:"PTCA", f:"percutaneous transluminal coronary angioplasty", m:"경피적 관상동맥 성형", c:"검사"},
+  {q:"EEG", f:"electroencephalography", m:"뇌파검사", c:"검사"},
+  {q:"TCD", f:"transcranial doppler", m:"도플러 뇌혈류검사", c:"검사"},
+  {q:"EMG", f:"electromyography", m:"근전도 검사", c:"검사"},
+  {q:"ERCP", f:"endoscopic retrograde cholangiopancreatography", m:"내시경역행담췌관조영", c:"검사"},
+  {q:"CFS", f:"colon fibroscopy", m:"대장내시경", c:"검사"},
+  {q:"BE", f:"barium enema", m:"바륨관장", c:"검사"},
+  {q:"VCUG", f:"voiding cystourethrography", m:"배뇨방광요도조영", c:"검사"},
+  {q:"EUS", f:"endoscopic ultrasound", m:"내시경초음파", c:"검사"},
+  {q:"GET", f:"gastric emptying time", m:"위배출시간", c:"검사"},
+  {q:"ICG test", f:"indocyanine green test", m:"인도시아닌그린 검사", c:"검사"},
+  {q:"IVP", f:"intravenous pyelography", m:"정맥신우조영상", c:"검사"},
+  {q:"KUB", f:"kidney ureter and bladder", m:"신장요관방광 일반촬영", c:"검사"},
+  {q:"KT", f:"kidney transplantation", m:"신이식", c:"검사"},
+  {q:"PCN", f:"percutaneous nephrostomy", m:"경피신루설치술", c:"검사"},
+  {q:"LT", f:"liver transplantation", m:"간이식", c:"검사"},
+  {q:"BMT", f:"bone marrow transplantation", m:"골수 이식", c:"검사"},
+  {q:"UGIS", f:"upper gastrointestinal series", m:"상부위장관 조영술", c:"검사"},
+  {q:"PAD", f:"percutaneous abscess drainage", m:"경피적 농양배액", c:"검사"},
+  {q:"PTBD", f:"percutaneous transhepatic bile drainage", m:"경피경간담즙배액", c:"검사"},
+  {q:"CTD", f:"chest tube drainage", m:"가슴관(흉관)배액", c:"검사"},
+  {q:"PEG", f:"percutaneous endoscopic gastrostomy", m:"경피적 내시경 위창냄술", c:"검사"},
+  {q:"TACE", f:"transhepatic arterial chemoembolization", m:"간경유동맥화학색전술", c:"검사"},
+  {q:"PTC", f:"percutaneous transhepatic cholangiography", m:"경피경간담관조영", c:"검사"},
+  {q:"MRCP", f:"magnetic resonance cholangiography", m:"자기공명 담관조영", c:"검사"},
+];
+
+/* ====================== 유틸 ====================== */
+const app = document.getElementById("app");
+const backBtn = document.getElementById("backBtn");
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+function setBack(show){ backBtn.classList.toggle("show", show); }
+backBtn.onclick = goHome;
+
+/* ====================== 오답 노트 저장소 ====================== */
+// 환경에 따라 window.storage(아티팩트) → localStorage(브라우저) → 메모리 순으로 자동 저장
+const tid = t => t.q + "∥" + t.m;                 // 용어 고유 키 (q가 중복되는 경우 대비)
+const TERM_BY_ID = {}; TERMS.forEach(t => TERM_BY_ID[tid(t)] = t);
+let NOTE = [];                                     // 저장된 용어 id 배열
+let NOTESET = new Set();
+const noteTerms = () => NOTE.map(id => TERM_BY_ID[id]).filter(Boolean);
+
+const Store = {
+  key: "mts_note_v1",
+  async read(){
+    if(typeof window!=="undefined" && window.storage && window.storage.get){
+      try{ const r = await window.storage.get(this.key, false); return r && r.value ? JSON.parse(r.value) : []; }
+      catch(e){ return []; }
+    }
+    try{ const raw = localStorage.getItem(this.key); return raw ? JSON.parse(raw) : []; }
+    catch(e){ return NOTE.slice(); }
+  },
+  async write(arr){
+    if(typeof window!=="undefined" && window.storage && window.storage.set){
+      try{ await window.storage.set(this.key, JSON.stringify(arr), false); return; }catch(e){}
+    }
+    try{ localStorage.setItem(this.key, JSON.stringify(arr)); }catch(e){}
+  }
+};
+function persist(){ Store.write(NOTE); updateNoteBadge(); }
+function inNote(t){ return NOTESET.has(tid(t)); }
+function addNote(t){ const id=tid(t); if(!NOTESET.has(id)){ NOTESET.add(id); NOTE.push(id); persist(); } }
+function removeNote(t){ const id=tid(t); if(NOTESET.has(id)){ NOTESET.delete(id); NOTE=NOTE.filter(x=>x!==id); persist(); } }
+function toggleNote(t){ inNote(t)?removeNote(t):addNote(t); }
+function clearNote(){ NOTE=[]; NOTESET=new Set(); persist(); }
+function updateNoteBadge(){
+  const b=document.getElementById("noteBadge");
+  if(b){ b.textContent=NOTE.length; b.classList.toggle("zero", NOTE.length===0); }
+}
+
+/* ====================== 홈 ====================== */
+function goHome(){
+  setBack(false);
+  app.innerHTML = `
+   <div class="home">
+     <div class="eyebrow">2026 ICN · 임상 실습 용어</div>
+     <h1>의학용어 학습</h1>
+     <p class="sub">투약·간호·진료·질환·검사 <b>${TERMS.length}</b>개 용어</p>
+     <div class="modes">
+       <div class="mode-card" tabindex="0" role="button" id="mFlash">
+         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="16" height="12" rx="2"/><path d="M22 8v8M6 10h8M6 14h5"/></svg>
+         <span class="arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+         <h3>플래시카드</h3>
+         <p>약어를 보고 떠올린 뒤 카드를 뒤집어 뜻을 확인해요.</p>
+       </div>
+       <div class="mode-card" tabindex="0" role="button" id="mQuiz">
+         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+         <span class="arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+         <h3>4지선다 퀴즈</h3>
+         <p>4개 보기 중 정답을 고르고 즉시 채점받아요.</p>
+       </div>
+     </div>
+     <button class="note-entry" tabindex="0" id="mNote">
+       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8l-4-4H5a1 1 0 0 0-1 1z"/><path d="M16 4v4h4M8 13h8M8 17h5"/></svg>
+       <span class="ne-txt">
+         <h3>오답 노트</h3>
+         <p>틀린 용어가 모여요. 모은 것만 따로 복습할 수 있어요.</p>
+       </span>
+       <span class="note-badge ${NOTE.length===0?"zero":""}" id="noteBadge">${NOTE.length}</span>
+     </button>
+     <div class="home-foot">출처 · 2026 ICN 지침서 용어 (투약 / 간호 / 진료 / 질환 / 검사)<br>키보드 — 카드: Space 뒤집기 · ←→ 이동 / 퀴즈: 1·2·3·4 선택</div>
+   </div>`;
+  document.getElementById("mFlash").onclick = ()=>startFlash();
+  document.getElementById("mQuiz").onclick = quizSetup;
+  document.getElementById("mNote").onclick = renderNote;
+  document.getElementById("mFlash").onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();startFlash();} };
+  document.getElementById("mQuiz").onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();quizSetup();} };
+}
+
+/* ====================== 플래시카드 ====================== */
+let fcState=null;
+function startFlash(makeDeck){
+  makeDeck = makeDeck || (()=>shuffle(TERMS));
+  const deck = makeDeck();
+  if(!deck.length){ renderNote(); return; }
+  fcState={ makeDeck, deck, i:0, flipped:false };
+  renderFlash();
+}
+function renderFlash(){
+  setBack(true);
+  const {deck,i,flipped}=fcState;
+  const t=deck[i];
+  const saved=inNote(t);
+  app.innerHTML=`
+   <div class="panel">
+     <div class="meta-row">
+       <span class="counter"><b>${i+1}</b> / ${deck.length}</span>
+       <div class="track"><div class="fill" style="width:${(i+1)/deck.length*100}%"></div></div>
+     </div>
+     <div class="fc-stage">
+       <div class="fc ${flipped?"flip":""}" id="fcCard" tabindex="0" role="button" aria-label="카드 뒤집기">
+         <div class="fc-face fc-front">
+           <span class="cat-tag">${t.c}</span>
+           <div class="fc-term">${esc(t.q)}</div>
+           <div class="fc-hint">탭하면 뜻이 보여요</div>
+         </div>
+         <div class="fc-face fc-back">
+           <span class="cat-tag">${t.c}</span>
+           <div class="fc-mean">${esc(t.m)}</div>
+           <div class="fc-full">${esc(t.f)}</div>
+           <div class="fc-q-small">${esc(t.q)}</div>
+         </div>
+       </div>
+     </div>
+     <div class="nav-row">
+       <button class="btn" id="fcPrev" ${i===0?"disabled":""}>← 이전</button>
+       <button class="btn primary" id="fcFlip">뒤집기</button>
+       <button class="btn" id="fcNext">${i===deck.length-1?"처음으로":"다음 →"}</button>
+     </div>
+     <div class="util-row">
+       <button class="btn btn-ghost fc-note-btn ${saved?"on":""}" id="fcNote">${saved?"★ 오답 노트에 담김":"☆ 오답 노트에 담기"}</button>
+       <button class="btn btn-ghost" id="fcShuffle">🔀 섞기</button>
+     </div>
+   </div>`;
+  const card=document.getElementById("fcCard");
+  const flip=()=>{ fcState.flipped=!fcState.flipped; card.classList.toggle("flip"); };
+  card.onclick=flip;
+  document.getElementById("fcFlip").onclick=flip;
+  document.getElementById("fcPrev").onclick=()=>{ if(fcState.i>0){fcState.i--;fcState.flipped=false;renderFlash();} };
+  document.getElementById("fcNext").onclick=()=>{ fcState.i=(fcState.i+1)%deck.length; fcState.flipped=false; renderFlash(); };
+  document.getElementById("fcShuffle").onclick=()=>startFlash(fcState.makeDeck);
+  document.getElementById("fcNote").onclick=(e)=>{ e.stopPropagation(); toggleNote(t); renderFlash(); };
+  card.focus();
+}
+
+/* ====================== 퀴즈 설정 ====================== */
+let quizCfg={ dir:"a2m", count:20 };
+function quizSetup(){
+  setBack(true);
+  app.innerHTML=`
+   <div class="setup">
+     <h2>4지선다 퀴즈</h2>
+     <p class="lead">출제 방향과 문제 수를 골라주세요.</p>
+
+     <div class="field-label"><span class="n">01</span> 출제 방향</div>
+     <div class="chip-row" id="dirRow">
+       <button class="chip ${quizCfg.dir==="a2m"?"on":""}" data-dir="a2m"><div class="ct">약어 → 뜻</div><div class="cd">abbr → meaning</div></button>
+       <button class="chip ${quizCfg.dir==="m2a"?"on":""}" data-dir="m2a"><div class="ct">뜻 → 약어</div><div class="cd">meaning → abbr</div></button>
+       <button class="chip ${quizCfg.dir==="mix"?"on":""}" data-dir="mix"><div class="ct">섞기</div><div class="cd">mixed</div></button>
+     </div>
+
+     <div class="field-label"><span class="n">02</span> 문제 수</div>
+     <div class="chip-row" id="cntRow">
+       <button class="chip ${quizCfg.count===10?"on":""}" data-cnt="10"><div class="ct">10문제</div></button>
+       <button class="chip ${quizCfg.count===20?"on":""}" data-cnt="20"><div class="ct">20문제</div></button>
+       <button class="chip ${quizCfg.count===0?"on":""}" data-cnt="0"><div class="ct">전체</div><div class="cd">${TERMS.length}</div></button>
+     </div>
+
+     <button class="btn primary start" id="startQuiz">퀴즈 시작</button>
+   </div>`;
+  document.querySelectorAll("#dirRow .chip").forEach(c=>c.onclick=()=>{
+    quizCfg.dir=c.dataset.dir;
+    document.querySelectorAll("#dirRow .chip").forEach(x=>x.classList.remove("on"));
+    c.classList.add("on");
+  });
+  document.querySelectorAll("#cntRow .chip").forEach(c=>c.onclick=()=>{
+    quizCfg.count=parseInt(c.dataset.cnt);
+    document.querySelectorAll("#cntRow .chip").forEach(x=>x.classList.remove("on"));
+    c.classList.add("on");
+  });
+  document.getElementById("startQuiz").onclick=startQuiz;
+}
+
+/* ====================== 퀴즈 진행 ====================== */
+let qz=null;
+function beginQuiz(makePool, dir){
+  qz={ makePool, dir, pool:makePool(), i:0, correct:0, wrong:0, wrongList:[], answered:false };
+  renderQuiz();
+}
+function startQuiz(){
+  const n = quizCfg.count===0 ? TERMS.length : Math.min(quizCfg.count, TERMS.length);
+  beginQuiz(()=>shuffle(TERMS).slice(0,n), quizCfg.dir);
+}
+function pickDir(){ return qz.dir==="mix" ? (Math.random()<0.5?"a2m":"m2a") : qz.dir; }
+
+function renderQuiz(){
+  setBack(true);
+  const t=qz.pool[qz.i];
+  const dir=pickDir();
+  qz.curDir=dir;
+
+  // 보기 구성: 같은 표시 문자열 중복 제거 + 같은 정답 키 제거
+  const showKey = dir==="a2m" ? "m" : "q";   // 보기에 보여줄 필드
+  const correctVal = t[showKey];
+  const seen = new Set([correctVal]);
+  const distract=[];
+  for(const o of shuffle(TERMS)){
+    if(o.q===t.q) continue;
+    if(o[showKey]===t[showKey]) continue;
+    if(seen.has(o[showKey])) continue;
+    seen.add(o[showKey]); distract.push(o);
+    if(distract.length===3) break;
+  }
+  const options = shuffle([t, ...distract]);
+
+  const promptHTML = dir==="a2m"
+    ? `<div class="q-eyebrow">다음 약어의 뜻은?</div><div class="q-term">${esc(t.q)}</div>`
+    : `<div class="q-eyebrow">다음 뜻에 해당하는 약어는?</div><div class="q-mean">${esc(t.m)}</div>`;
+
+  app.innerHTML=`
+   <div class="panel">
+     <div class="meta-row">
+       <span class="counter"><b>${qz.i+1}</b> / ${qz.pool.length}</span>
+       <div class="track"><div class="fill" style="width:${(qz.i)/qz.pool.length*100}%"></div></div>
+       <span class="score-pill"><span class="ok">${qz.correct}</span> · <span class="no">${qz.wrong}</span></span>
+     </div>
+     <div class="q-card">${promptHTML}</div>
+     <div class="opts" id="opts"></div>
+     <div class="reveal" id="reveal"></div>
+     <div class="next-row" id="nextRow"></div>
+   </div>`;
+
+  const optsEl=document.getElementById("opts");
+  const keys=["1","2","3","4"];
+  options.forEach((o,idx)=>{
+    const b=document.createElement("button");
+    b.className="opt"+(dir==="m2a"?" mono-opt":"");
+    b.innerHTML=`<span class="key">${keys[idx]}</span><span>${esc(o[showKey])}</span>`;
+    b.dataset.qval=o.q;
+    b.onclick=()=>answer(o,t,options,b);
+    optsEl.appendChild(b);
+  });
+  qz.answered=false;
+  qz._options=options; qz._target=t;
+}
+
+function answer(chosen,target,options,btn){
+  if(qz.answered) return;
+  qz.answered=true;
+  const ok = chosen.q===target.q;
+  if(ok){ qz.correct++; } else { qz.wrong++; qz.wrongList.push(target); addNote(target); }
+
+  document.querySelectorAll(".opt").forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.qval===target.q) b.classList.add("correct");
+  });
+  if(!ok) btn.classList.add("wrong");
+
+  const rev=document.getElementById("reveal");
+  rev.className="reveal show";
+  rev.innerHTML = ok
+    ? `✓ 정답 — <b>${esc(target.q)}</b> · ${esc(target.f)}`
+    : `✗ 정답은 <b>${esc(target.q)}</b><br>${esc(target.m)} · ${esc(target.f)}<br><span style="color:var(--accent-deep)">★ 오답 노트에 담았어요</span>`;
+
+  const nr=document.getElementById("nextRow");
+  const nb=document.createElement("button");
+  nb.className="btn primary";
+  nb.textContent = qz.i===qz.pool.length-1 ? "결과 보기" : "다음 문제 →";
+  nb.onclick=nextQ;
+  nr.appendChild(nb);
+}
+function nextQ(){
+  qz.i++;
+  if(qz.i>=qz.pool.length) renderResult();
+  else renderQuiz();
+}
+
+/* ====================== 결과 ====================== */
+function renderResult(){
+  setBack(true);
+  const total=qz.correct+qz.wrong;
+  const pct= total? Math.round(qz.correct/total*100):0;
+  let msg="다시 한 번 풀어볼까요?";
+  if(pct>=90) msg="완벽해요. 실습에서 바로 통합니다.";
+  else if(pct>=70) msg="좋아요. 틀린 것만 한 번 더 보면 돼요.";
+  else if(pct>=50) msg="절반은 잡았어요. 오답 위주로 복습해요.";
+
+  const circ=2*Math.PI*60;
+  const off=circ*(1-pct/100);
+
+  let wrongHTML="";
+  if(qz.wrongList.length){
+    wrongHTML=`<div class="wrong-block">
+      <div class="wrong-head">오답 다시보기 (${qz.wrongList.length})</div>
+      ${qz.wrongList.map(t=>`<div class="wrong-item"><span class="wq">${esc(t.q)}</span><span class="wm">${esc(t.m)}<small>${esc(t.f)}</small></span></div>`).join("")}
+    </div>`;
+  }
+
+  app.innerHTML=`
+   <div class="result">
+     <div class="ring">
+       <svg width="140" height="140" viewBox="0 0 140 140">
+         <circle cx="70" cy="70" r="60" fill="none" stroke="var(--line)" stroke-width="9"/>
+         <circle cx="70" cy="70" r="60" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round"
+           stroke-dasharray="${circ}" stroke-dashoffset="${off}" transform="rotate(-90 70 70)"/>
+       </svg>
+       <div class="pct"><span class="big">${pct}%</span><span class="lbl">SCORE</span></div>
+     </div>
+     <div class="msg">${msg}</div>
+     <div class="tally"><span class="ok">정답 ${qz.correct}</span> &nbsp;·&nbsp; <span class="no">오답 ${qz.wrong}</span></div>
+     ${wrongHTML}
+     <div class="result-actions">
+       <button class="btn" id="rRetry">다시 풀기</button>
+       <button class="btn primary" id="rHome">홈으로</button>
+     </div>
+   </div>`;
+  document.getElementById("rRetry").onclick=()=>beginQuiz(qz.makePool, qz.dir);
+  document.getElementById("rHome").onclick=goHome;
+}
+
+/* ====================== 오답 노트 화면 ====================== */
+function renderNote(){
+  setBack(true);
+  const terms=noteTerms();
+  if(!terms.length){
+    app.innerHTML=`
+     <div class="note-screen">
+       <div class="note-top"><h2>오답 노트</h2></div>
+       <div class="note-empty">
+         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8l-4-4H5a1 1 0 0 0-1 1z"/><path d="M16 4v4h4M8 13h8M8 17h5"/></svg>
+         <div class="t">아직 담긴 용어가 없어요</div>
+         <div class="d">4지선다 퀴즈에서 틀린 용어가 자동으로 모이고, 플래시카드에서 ☆ 버튼으로 직접 담을 수도 있어요.</div>
+       </div>
+     </div>`;
+    return;
+  }
+  app.innerHTML=`
+   <div class="note-screen">
+     <div class="note-top"><h2>오답 노트</h2><span class="cnt">${terms.length}개</span></div>
+     <p class="note-lead">틀렸거나 헷갈렸던 용어예요. 모은 것만 골라 복습할 수 있어요.</p>
+     <div class="note-list" id="noteList">
+       ${terms.map(t=>`
+         <div class="note-row" data-id="${esc(tid(t))}">
+           <span class="nq">${esc(t.q)}</span>
+           <span class="nm">${esc(t.m)}<small>${esc(t.f)}</small></span>
+           <span class="ncat">${t.c}</span>
+           <button class="ndel" aria-label="삭제" title="외웠어요 (삭제)">
+             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+           </button>
+         </div>`).join("")}
+     </div>
+     <div class="note-actions">
+       <button class="btn" id="nFlash">플래시카드로 복습</button>
+       <button class="btn" id="nQuiz">퀴즈로 복습</button>
+       <button class="btn btn-ghost wide" id="nClear">전체 비우기</button>
+     </div>
+     <div class="note-foot">자동으로 이 브라우저에 저장돼요. (기기·브라우저가 바뀌면 새로 시작해요)</div>
+   </div>`;
+  document.querySelectorAll("#noteList .ndel").forEach(b=>b.onclick=()=>{
+    const id=b.closest(".note-row").dataset.id;
+    const t=TERM_BY_ID[id];
+    if(t){ removeNote(t); renderNote(); }
+  });
+  document.getElementById("nFlash").onclick=()=>startFlash(()=>shuffle(noteTerms()));
+  document.getElementById("nQuiz").onclick=()=>beginQuiz(()=>shuffle(noteTerms()), quizCfg.dir);
+  const nc=document.getElementById("nClear");
+  let armed=false;
+  nc.onclick=()=>{
+    if(!armed){
+      armed=true; nc.textContent="한 번 더 누르면 전체 삭제"; nc.style.color="var(--wrong)";
+      setTimeout(()=>{ armed=false; nc.textContent="전체 비우기"; nc.style.color=""; }, 3000);
+    } else { clearNote(); renderNote(); }
+  };
+}
+
+/* ====================== 키보드 ====================== */
+document.addEventListener("keydown", e=>{
+  // 버튼에 포커스가 있을 때 Space/Enter는 그 버튼이 처리하도록 둠
+  if((e.key===" "||e.key==="Enter") && e.target.closest && e.target.closest("button")) return;
+  // 플래시카드
+  if(fcState && document.getElementById("fcCard")){
+    if(e.key===" "||e.key==="Enter"){ e.preventDefault(); document.getElementById("fcFlip").click(); }
+    else if(e.key==="ArrowLeft"){ const p=document.getElementById("fcPrev"); if(p&&!p.disabled)p.click(); }
+    else if(e.key==="ArrowRight"){ document.getElementById("fcNext").click(); }
+    return;
+  }
+  // 퀴즈
+  if(qz && document.getElementById("opts")){
+    if(!qz.answered && ["1","2","3","4"].includes(e.key)){
+      const opts=document.querySelectorAll(".opt");
+      const idx=parseInt(e.key)-1;
+      if(opts[idx]) opts[idx].click();
+    } else if((e.key==="Enter"||e.key===" ") && qz.answered){
+      e.preventDefault();
+      const nb=document.querySelector("#nextRow .btn"); if(nb) nb.click();
+    }
+  }
+});
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ====================== 시작 ====================== */
+(async function init(){
+  try{ NOTE = await Store.read(); NOTESET = new Set(NOTE); }catch(e){ NOTE=[]; NOTESET=new Set(); }
+  goHome();
+})();
+</script>
+</body>
+</html>
